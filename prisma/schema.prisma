@@ -14,10 +14,28 @@ datasource db {
 
 // model
 model User{
-    id              String      @id @default(uuid())
-    name            String
-    email           String      @unique
-    currentBalance  Float       @default(0)
-    createdAt       DateTime    @default(now())
-    updatedAt       DateTime    @updatedAt
+    id                  String      @id @default(uuid())
+    name                String
+    email               String      @unique
+    currentBalance      Float       @default(0)
+    createdAt           DateTime    @default(now())
+    updatedAt           DateTime    @updatedAt
+
+    sentTransaction     Transaction[] @relation("SentTransactions")
+    receivedTransactoin Transaction[] @relation("ReceivedTransaction")
+
+
+}
+
+model Transaction{
+    id          String          @id @default(uuid())
+    fromID      String
+    toID        String
+    amount      Float           @default(0)
+    createdAt   DateTime        @default(now())
+
+    userFrom    User            @relation("SentTransactions" , fields: [fromID] , references: [id])
+    userTo      User            @relation("ReceivedTransaction" ,fields: [toID] , references: [id])
+
+    @@index([createdAt] , map: "date_index_on_transaction")
 }

@@ -1,35 +1,74 @@
-import {db} from "../../lib/db.ts";
-import {type TranferMoneyInput} from  "../../validators/TransactionSchema/transactions.validator.ts"
+import { db } from "../../lib/db.ts";
+import { type TranferMoneyInput } from "../../validators/TransactionSchema/transactions.validator.ts";
 
-export async function transferMoney({from_id , to_id , amount} : TranferMoneyInput){
-    
-    const from_user = await db.user.findUnique({
-        where:{
-            id : from_id
-        }
-    })
+export async function transferMoney({
+  from_id,
+  to_id,
+  amount,
+}: TranferMoneyInput) {
+  if (from_id === to_id) {
+    throw new Error("Cannot transfer to yourself!");
+  }
 
-    const to_user = await db.user.findUnique({
-        where:{
-            id: to_id
-        }
-    })
+  if (amount <= 0) {
+    throw new Error("Amount cannot be zero.");
+  }
 
-    if(from_user?.currentBalance && from_user.currentBalance < amount){
-        console.log("USER BALANCE IS LESS TO SEND...");
+  const response = await db.$transaction(async (tx) => {
+    // receiver exists
+    const receiver = tx.user.findUnique({
+      where: {
+        id: to_id,
+      },
+      select: {
+        id: true,
+      },
+    });
 
-        return new Error {`${from_user?.currentBalance} : Less balance . Cannot tranfer ${amount}...`
-        }
+    if (!receiver) {
+      throw new Error("Reveicer doesnt exists...");
     }
 
-    const transfer = await db.user.update({
-        where : {
-            id: from_id
+    // deduct money from sender
+    const senderUpdate = tx.user.updateMany({
+      where: {
+        id: from_id,
+        currentBalance: { gte: amount },
+      },
+      data: {
+        currentBalance: {
+          decrement: amount,
         },
-        data:{
-            currentBalance : {
-                decrement: amount
-            }
-        }
-    })
+      },
+    });
+
+    if ((await senderUpdate).count === 0) {
+      throw new Error("Insufficient balance or sender not found");
+    }
+
+    // credit receiver
+    const credit = tx.user.updateMany({
+      where: {
+        id: to_id,
+      },
+      data: {
+        currentBalance: {
+          increment: amount,
+        },
+      },
+    });
+
+    // record the transaction
+    const transaction = tx.transaction.create({
+      data: {
+        fromID: from_id,
+        toID: to_id,
+        amount: amount,
+      },
+    });
+
+    return transaction;
+  });
+
+  return response;
 }
