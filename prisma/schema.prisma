@@ -17,9 +17,12 @@ model User{
     id                  String      @id @default(uuid())
     name                String
     email               String      @unique
+    passwordHash        String?
     currentBalance      Float       @default(0)
     createdAt           DateTime    @default(now())
     updatedAt           DateTime    @updatedAt
+
+    sessions            Session[]
 
     sentTransaction     Transaction[] @relation("SentTransactions")
     receivedTransactoin Transaction[] @relation("ReceivedTransaction")
@@ -38,4 +41,17 @@ model Transaction{
     userTo      User            @relation("ReceivedTransaction" ,fields: [toID] , references: [id])
 
     @@index([createdAt] , map: "date_index_on_transaction")
+}
+
+model Session{
+    id         String           @id @default(uuid())
+    userId     String
+    tokenHash  String           @unique
+    expiersAt  DateTime
+    createdAt  DateTime         @default(now())
+
+    user User @relation(fields: [userId] , references: [id] , onDelete: Cascade)
+
+    @@index([userId])
+    @@index([expiersAt])
 }

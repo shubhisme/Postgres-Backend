@@ -7,13 +7,10 @@ export async function addMoneyController(
   res: Response,
   next: NextFunction,
 ) {
-  try {
+
     const data = addMoneySchema.parse(req.body);
 
     const user = await addMoney(data);
 
     res.status(201).json({ data: user, success: true });
-  } catch (err) {
-    next(err);
-  }
 }

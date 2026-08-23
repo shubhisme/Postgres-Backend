@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/AppError.ts";
 import { db } from "../../lib/db.ts";
 import { type TranferMoneyInput } from "../../validators/TransactionSchema/transactions.validator.ts";
 
@@ -7,11 +8,11 @@ export async function transferMoney({
   amount,
 }: TranferMoneyInput) {
   if (from_id === to_id) {
-    throw new Error("Cannot transfer to yourself!");
+    throw new AppError("Cannot transfer to yourself!", 400);
   }
 
   if (amount <= 0) {
-    throw new Error("Amount cannot be zero.");
+    throw new AppError("Amount cannot be zero.", 400);
   }
 
   const response = await db.$transaction(async (tx) => {
@@ -26,7 +27,7 @@ export async function transferMoney({
     });
 
     if (!receiver) {
-      throw new Error("Reveicer doesnt exists...");
+      throw new AppError("Reveicer doesnt exists...", 404);
     }
 
     // deduct money from sender
@@ -43,7 +44,7 @@ export async function transferMoney({
     });
 
     if ((await senderUpdate).count === 0) {
-      throw new Error("Insufficient balance or sender not found");
+      throw new AppError("Insufficient balance or sender not found", 400);
     }
 
     // credit receiver

@@ -7,13 +7,10 @@ export async function transferHistoryController(
   res: Response,
   next: NextFunction,
 ) {
-  try {
+
     const data = transferHitorySchema.parse(req.body);
 
     const transfer_data = await transferHistory(data);
 
     res.status(200).json({ data: transfer_data, success: true });
-  } catch (err) {
-    next(err);
-  }
 }
