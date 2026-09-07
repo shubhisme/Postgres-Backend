@@ -1,23 +1,37 @@
+import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import config from "../config/config.ts";
+import { Pool } from "pg";
+import { requestContext } from "./requestContext.ts";
 
-const adapter = new PrismaPg({ connectionString: config.DATABASE_URL });
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
-export const db =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    adapter,
-    log:
-      config.NODE_ENV === "development"
-        ? ["query", "error", "warn"]
-        : ["error"],
-  });
+export const db = prisma.$extends({
+  query: {
+    $allModels: {
+      async $allOperations({ model, operation, args, query  }) {
+        console.log("PRISMA QUERY INTERCEPTED:", model, operation);
+        const context = requestContext.getStore();
 
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = db;
-}
+        const start = process.hrtime.bigint();
+
+        try {
+          return await query(args);
+        } finally {
+          if (context) {
+            const end = process.hrtime.bigint();
+
+            context.dbQueryCount += 1;
+
+            context.dbQueryTime += Number(end - start) / 1_000_000;
+          }
+        }
+      },
+    },
+  },
+});

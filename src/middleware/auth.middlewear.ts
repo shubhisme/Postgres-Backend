@@ -58,10 +58,8 @@ export async function requireAuth(
 
     console.log("calling next()");
 
-    next();
-
-    console.log("next() called");
+    return next();
   } catch (err) {
-    next(err);
+    return next(err);
   }
 }

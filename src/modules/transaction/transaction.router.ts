@@ -1,8 +1,10 @@
 import { Router } from "express";
-import { addMoneyController } from "../../controller/TransactionController/addMoney.controller.ts";
-import { transferMoneyController } from "../../controller/TransactionController/transferMoney.controller.ts";
-import { transferHistoryController } from "../../controller/TransactionController/transferHistory.controller.ts";
 import { asyncHandler } from "../../middleware/asyncHandler.ts";
+import {
+  addMoneyController,
+  transferHistoryController,
+  transferMoneyController,
+} from "./transaction.controller.ts";
 
 const router = Router();
 

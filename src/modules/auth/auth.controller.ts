@@ -62,7 +62,7 @@ export async function logoutController(
 
     res.clearCookie("session", {
       httpOnly: true,
-      secure: process.env.NODE_DEV === "production",
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
     });

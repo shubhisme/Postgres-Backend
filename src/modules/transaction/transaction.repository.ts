@@ -1,21 +1,74 @@
 import { AppError } from "../../errors/AppError.ts";
 import { db } from "../../lib/db.ts";
-import { type TranferMoneyInput } from "../../validators/TransactionSchema/transactions.validator.ts";
+import { TranferMoneyInput } from "./transaction.validator.ts";
 
-export async function transferMoney({
+export async function addMoney({ id, amount }: { id: string; amount: number }) {
+  return await db.user.update({
+    where: {
+      id: id,
+    },
+    data: {
+      currentBalance: {
+        increment: amount,
+      },
+    },
+  });
+}
+
+export async function fromTransaction(id: string) {
+  return db.transaction.findMany({
+    where: {
+      fromID: id,
+    },
+    select: {
+      amount: true,
+      createdAt: true,
+
+      userFrom: {
+        select: { name: true },
+      },
+
+      userTo: {
+        select: { name: true },
+      },
+    },
+
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+}
+
+export async function ToTransaction(id: string) {
+  return db.transaction.findMany({
+    where: {
+      toID: id,
+    },
+    select: {
+      amount: true,
+      createdAt: true,
+
+      userFrom: {
+        select: { name: true },
+      },
+
+      userTo: {
+        select: { name: true },
+      },
+    },
+
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+}
+
+export async function TransferMoneytx({
   from_id,
   to_id,
   amount,
 }: TranferMoneyInput) {
-  if (from_id === to_id) {
-    throw new AppError("Cannot transfer to yourself!", 400);
-  }
-
-  if (amount <= 0) {
-    throw new AppError("Amount cannot be zero.", 400);
-  }
-
-  const response = await db.$transaction(async (tx) => {
+  await db.$transaction(async (tx) => {
     // receiver exists
     const receiver = tx.user.findUnique({
       where: {
@@ -70,6 +123,4 @@ export async function transferMoney({
 
     return transaction;
   });
-
-  return response;
 }

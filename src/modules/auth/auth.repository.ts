@@ -60,5 +60,5 @@ export async function deleteSessionByTokenHash(tokenHash: string) {
     where: {
       tokenHash: tokenHash,
     },
-  });
+  });   
 }
