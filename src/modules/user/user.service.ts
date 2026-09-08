@@ -1,6 +1,9 @@
 import { redis } from "../../lib/redis.ts";
-import { getUserByID, getUsers } from "./user.repository.ts";
-import { getUserByIdSchema } from "./user.validator.ts";
+import {
+  getUserByID,
+  getUsers,
+  updateUserNameById,
+} from "./user.repository.ts";
 
 export async function getUsersService() {
   const users = await getUsers();
@@ -28,4 +31,19 @@ export async function getUsersByID({ id }: { id: string }) {
   await redis.set(cacheKey, JSON.stringify(user), { EX: 300 });
 
   return user;
+}
+
+export async function updateUserName({
+  id,
+  name,
+}: {
+  id: string;
+  name: string;
+}) {
+  // Update the user's name in the database
+  const updateuser = await updateUserNameById({ id, name });
+
+  redis.del(`user:profile:${id}`); // Invalidate the cache for this user
+
+  return updateuser;
 }

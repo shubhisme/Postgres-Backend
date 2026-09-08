@@ -21,3 +21,22 @@ export async function getUserByID(data: { id: string }) {
 
   return user;
 }
+
+export async function updateUserNameById(data: { id: string; name: string }) {
+  const user = await db.user.update({
+    where: {
+      id: data.id,
+    },
+    data: {
+      name: data.name,
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      createdAt: true,
+    },
+  });
+
+  return user;
+}

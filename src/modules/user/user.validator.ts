@@ -22,5 +22,10 @@ export const addMoneySchema = z.object({
   amount: z.number().min(1, "Amount must be greater than 0"),
 });
 
+export const updateUserNameSchema = z.object({
+  name: z.string().trim().min(1, "Name is required"),
+});
+
 export type AddMoneyInput = z.infer<typeof addMoneySchema>;
 export type CreateUserInput = z.infer<typeof createUserSchema>;
+export type UpdateUserNameInput = z.infer<typeof updateUserNameSchema>;
