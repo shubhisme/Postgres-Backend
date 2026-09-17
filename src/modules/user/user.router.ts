@@ -10,7 +10,7 @@ import {
 const router = Router();
 
 router.get("/", requireAuth, asyncHandler(getUsersController));
-router.get("/:id", requireAuth, asyncHandler(getUserByIdController));
+router.get("/:id", asyncHandler(getUserByIdController));
 router.patch("/:id", requireAuth, asyncHandler(updateUserNameController));
 
 export default router;
