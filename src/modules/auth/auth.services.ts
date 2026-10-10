@@ -1,14 +1,13 @@
 import argon2 from "argon2";
-import {
-  createSession,
-  createUser,
-  deleteSessionByTokenHash,
-  findUserByEmail,
-} from "./auth.repository.ts";
+import { createUser, findUserByEmail } from "./auth.repository.ts";
 import { RegistartionInput, LoginInput, loginSchema } from "./auth.schema.ts";
 import { AppError } from "../../errors/AppError.ts";
-import { parse } from "node:querystring";
 import { genetrateSessionToken, hashSessionToken } from "./session.ts";
+import {
+  createSession,
+  deleteSession,
+  getSession,
+} from "../../lib/sessions.ts";
 
 export async function registerUser(input: RegistartionInput) {
   const existingUser = await findUserByEmail(input.email);
@@ -28,7 +27,10 @@ export async function registerUser(input: RegistartionInput) {
   return user;
 }
 
-export async function loginUser(input: LoginInput) {
+export async function loginUser(
+  input: LoginInput,
+  existingSessionToken?: string,
+) {
   const user = await findUserByEmail(input.email);
 
   if (!user) {
@@ -43,33 +45,54 @@ export async function loginUser(input: LoginInput) {
     throw new AppError("Invalid email or password.", 400);
   }
 
-  const sessionToken = genetrateSessionToken();
+  if (existingSessionToken) {
+    const existingSession = await getSession(
+      hashSessionToken(existingSessionToken),
+    );
+    const existingExpiresAt = existingSession
+      ? Date.parse(existingSession.expiresAt)
+      : Number.NaN;
 
-  const tokenHash = hashSessionToken(sessionToken);
+    if (
+      existingSession?.userId === user.id &&
+      Number.isFinite(existingExpiresAt) &&
+      existingExpiresAt > Date.now()
+    ) {
+      return {
+        sessionToken: existingSessionToken,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        },
+        expiresAt: new Date(existingExpiresAt),
+      };
+    }
+  }
 
-  const expiersAt = new Date();
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const sessionToken = genetrateSessionToken();
+    const tokenHash = hashSessionToken(sessionToken);
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
-  expiersAt.setDate(expiersAt.getDate() + 30);
+    if (await createSession(tokenHash, user.id, expiresAt)) {
+      return {
+        sessionToken,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        },
+        expiresAt,
+      };
+    }
+  }
 
-  await createSession({
-    userId: user.id,
-    tokenHash: tokenHash,
-    expiersAt: expiersAt,
-  });
-
-  return {
-    sessionToken,
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-    },
-    expiersAt,
-  };
+  throw new AppError("Unable to create a unique login session.", 500);
 }
 
 export async function logoutUser(session: string) {
   const hashToken = hashSessionToken(session);
 
-  await deleteSessionByTokenHash(hashToken);
+  await deleteSession(hashToken);
 }

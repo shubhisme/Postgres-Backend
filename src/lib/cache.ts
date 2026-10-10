@@ -19,6 +19,7 @@ export async function getCache<T>(key: string): Promise<cacheReadResult<T>> {
     }
 
     try {
+      console.log(`Cache hit for key ${key}: `, value);
       return {
         status: "hit",
         value: JSON.parse(value) as T,
