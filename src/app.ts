@@ -10,10 +10,10 @@ import { ExportMetrics } from "./middleware/requestMetrics.ts";
 const app = express();
 app.use(express.json());
 app.use(cookieParse());
-app.use(ExportMetrics)
+app.use(ExportMetrics);
 
 app.get("/health", async (_req: Request, res: Response) => {
-  res.status(200).json({ message: "OK" });
+  res.status(200).json({ message: "OK", instance: process.env.INSTANCE_ID });
 });
 
 app.get("/", (req: Request, res: Response) => {

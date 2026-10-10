@@ -4,14 +4,14 @@ import config from "./config/config.ts";
 import {db} from "./lib/db.ts";
 import {redis} from "./lib/redis.ts"
 
-const PORT = Number(config.PORT);
+const PORT = Number(config.PORT) || 5001;
 
 async function startServer() {
   try {
     await redis.connect();
 
     const server = app.listen(PORT, "0.0.0.0", () => {
-      console.log(`Server is running on port ${PORT}`);
+      console.log(`Server is running on port ${PORT} | instance : ${process.env.INSTANCE_ID}`);
     });
 
     process.on("SIGTERM", () => {

@@ -30,13 +30,13 @@ export async function registerController(
 export async function loginController(req: Request, res: Response) {
   const input = loginSchema.parse(req.body);
 
-  const result = await loginUser(input);
+  const result = await loginUser(input, req.cookies?.session);
 
   res.cookie("session", result.sessionToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    expires: result.expiersAt,
+    expires: result.expiresAt,
     path: "/",
   });
 

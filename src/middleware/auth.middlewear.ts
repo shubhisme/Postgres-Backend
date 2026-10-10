@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { hashSessionToken } from "../modules/auth/session.ts";
-import { findSessionByTokenhash } from "../modules/auth/auth.repository.ts";
+import { getSession } from "../lib/sessions.ts";
 
 export async function requireAuth(
   req: Request,
@@ -8,9 +8,7 @@ export async function requireAuth(
   next: NextFunction,
 ) {
   try {
-    console.log("requireAuth reached");
-    console.log("cookies:", req.cookies);
-    console.log("authorization:", req.headers.authorization);
+    console.log("requireAuth middleware called");
     const sessionToken = req.cookies?.session;
 
     if (!sessionToken) {
@@ -24,12 +22,7 @@ export async function requireAuth(
     }
 
     const hashToken = hashSessionToken(sessionToken);
-
-    console.log({ hashtoken: hashToken });
-
-    const session = await findSessionByTokenhash(hashToken);
-
-    console.log(session);
+    const session = await getSession(hashToken);
 
     if (!session) {
       return res.status(401).json({
@@ -41,7 +34,8 @@ export async function requireAuth(
       });
     }
 
-    if (session.expiersAt <= new Date()) {
+    const expiresAt = Date.parse(session.expiresAt);
+    if (!Number.isFinite(expiresAt) || expiresAt <= Date.now()) {
       return res.status(401).json({
         success: false,
         error: {
@@ -51,12 +45,10 @@ export async function requireAuth(
       });
     }
 
+    console.log("Session is valid, userId:", session.userId);
     req.user = {
       userId: session.userId,
     };
-    console.log("req.user:", req.user);
-
-    console.log("calling next()");
 
     return next();
   } catch (err) {

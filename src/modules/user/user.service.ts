@@ -1,4 +1,6 @@
+import { deleteCache, getCache, setCache } from "../../lib/cache.ts";
 import { redis } from "../../lib/redis.ts";
+import { acquireLock, releaseLock } from "../../lib/redisLock.ts";
 import {
   getUserByID,
   getUsers,
@@ -14,23 +16,80 @@ export async function getUsersService() {
 export async function getUsersByID({ id }: { id: string }) {
   const cacheKey = `user:profile:${id}`;
 
-  // check redis
-  const cachedUser = await redis.get(cacheKey);
+  const lockKey = `lock:${cacheKey}`;
 
-  //cacahe HIT
-  if (cachedUser) {
-    console.log("Cache HIT : ", cachedUser);
-    return JSON.parse(cachedUser);
+  const LOCK_TTL_SECONDS = 10;
+
+  const MAX_RETRIES = 50;
+
+  const RETRY_DELAY_MS = 100;
+
+  // 1. Check Redis cache
+  const cachedUser = await getCache<string>(cacheKey);
+
+  // 2. Cache HIT
+  if (cachedUser.status === 'hit') {
+    console.log("Cache HIT:", cacheKey);
+
+    return cachedUser;
   }
 
-  const user = await getUserByID({ id });
+  console.log("Cache MISS:", cacheKey);
 
-  console.log("Cache MISS : ", cacheKey);
+  // 3. Try to acquire Redis lock
+  const lockToken = await acquireLock(lockKey, LOCK_TTL_SECONDS);
 
-  // store in redis
-  await redis.set(cacheKey, JSON.stringify(user), { EX: 300 });
+  // 4. Lock acquired
+  if (lockToken) {
+    try {
+      console.log("Lock acquired:", lockKey);
 
-  return user;
+      // 5. Double-check cache
+      const cachedUserAfterLock = await getCache<string>(cacheKey);
+
+      if (cachedUserAfterLock.status === 'hit') {
+        console.log("Cache HIT after acquiring lock:", cacheKey);
+
+        return cachedUserAfterLock;
+      }
+
+      // 7. Query PostgreSQL
+      const user = await getUserByID({ id });
+
+      console.log("DB query executed:", id);
+
+      // 8. Store in Redis
+      await setCache(cacheKey, user, 5);
+
+      console.log("Cache SET:", cacheKey);
+
+      return user;
+    } finally {
+      // 9. Release only our own lock
+      await releaseLock(lockKey, lockToken);
+
+      console.log("Lock released:", lockKey);
+    }
+  }
+
+  // 10. Lock is already held by another request
+  console.log("Lock busy. Waiting:", lockKey);
+
+  // 11. Wait and retry cache
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+
+    const cachedUserAfterWait = await getCache<string>(cacheKey);
+
+    if (cachedUserAfterWait) {
+      console.log("Cache HIT after waiting:", cacheKey);
+
+      return cachedUserAfterWait;
+    }
+  }
+
+  // 12. Cache never became available
+  throw new Error("Cache unavailable after waiting for lock");
 }
 
 export async function updateUserName({
@@ -43,7 +102,7 @@ export async function updateUserName({
   // Update the user's name in the database
   const updateuser = await updateUserNameById({ id, name });
 
-  redis.del(`user:profile:${id}`); // Invalidate the cache for this user
+  deleteCache(`user:profile:${id}`);
 
   return updateuser;
 }
