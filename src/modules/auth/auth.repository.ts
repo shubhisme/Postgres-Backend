@@ -1,4 +1,4 @@
-import { db } from "../../lib/db.ts";
+import { db } from "../../lib/db.js";
 
 export async function findUserByEmail(email: string) {
   return db.user.findUnique({

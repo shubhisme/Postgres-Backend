@@ -1,8 +1,8 @@
 import { type Request, type Response } from "express";
-import { getUserByIdSchema, updateUserNameSchema } from "./user.validator.ts";
-import { getUsersByID, updateUserName } from "./user.service.ts";
-import { AppError } from "../../errors/AppError.ts";
-import { getUsers } from "./user.repository.ts";
+import { getUserByIdSchema, updateUserNameSchema } from "./user.validator.js";
+import { getUsersByID, updateUserName } from "./user.service.js";
+import { AppError } from "../../errors/AppError.js";
+import { getUsers } from "./user.repository.js";
 
 export async function getUserByIdController(req: Request, res: Response) {
   const data = getUserByIdSchema.parse(req.params);

@@ -1,15 +1,15 @@
-import { AppError } from "../../errors/AppError.ts";
+import { AppError } from "../../errors/AppError.js";
 import {
   addMoney,
   fromTransaction,
   ToTransaction,
   TransferMoneytx,
-} from "./transaction.repository.ts";
+} from "./transaction.repository.js";
 import {
   AddMoneyInput,
   TranferMoneyInput,
   TransferHitoryInput,
-} from "./transaction.validator.ts";
+} from "./transaction.validator.js";
 
 export async function addMoneyService({ id, amount }: AddMoneyInput) {
   const money = await addMoney({ id, amount });

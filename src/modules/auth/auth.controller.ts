@@ -3,9 +3,9 @@ import {
   registrationSchema,
   RegistartionInput,
   loginSchema,
-} from "./auth.schema.ts";
-import { loginUser, logoutUser, registerUser } from "./auth.services.ts";
-import { AppError } from "../../errors/AppError.ts";
+} from "./auth.schema.js";
+import { loginUser, logoutUser, registerUser } from "./auth.services.js";
+import { AppError } from "../../errors/AppError.js";
 import { success } from "zod";
 
 export async function registerController(

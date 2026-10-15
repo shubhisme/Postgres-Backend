@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { hashSessionToken } from "../modules/auth/session.ts";
-import { getSession } from "../lib/sessions.ts";
+import { hashSessionToken } from "../modules/auth/session.js";
+import { getSession } from "../lib/sessions.js";
 
 export async function requireAuth(
   req: Request,

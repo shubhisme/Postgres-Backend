@@ -1,8 +1,8 @@
 import "dotenv/config";
-import app from "./app.ts";
-import config from "./config/config.ts";
-import {db} from "./lib/db.ts";
-import {redis} from "./lib/redis.ts"
+import app from "./app.js";
+import config from "./config/config.js";
+import { db } from "./lib/db.js";
+import { redis } from "./lib/redis.js";
 
 const PORT = Number(config.PORT) || 5001;
 
@@ -11,15 +11,17 @@ async function startServer() {
     await redis.connect();
 
     const server = app.listen(PORT, "0.0.0.0", () => {
-      console.log(`Server is running on port ${PORT} | instance : ${process.env.INSTANCE_ID}`);
+      console.log(
+        `Server is running on port ${PORT} | instance : ${process.env.INSTANCE_ID}`,
+      );
     });
 
     process.on("SIGTERM", () => {
-      void shutdown("SIGTERM");
+      GracefulShutdown("SIGTERM");
     });
 
     process.on("SIGINT", () => {
-      void shutdown("SIGINT");
+      GracefulShutdown("SIGINT");
     });
 
     async function shutdown(signal: string) {
@@ -33,6 +35,29 @@ async function startServer() {
           console.log("Redis connection closed");
           console.log("Database connection closed");
           console.log("HTTP server closed");
+
+          process.exit(0);
+        } catch (err) {
+          console.error("Error during shutdown:", err);
+          process.exit(1);
+        }
+      });
+    }
+
+    async function GracefulShutdown(signal: string) {
+      console.log(`${signal} received. Starting graceful shutdown...`);
+
+      server.close(async () => {
+        console.log("HTTP server closed");
+
+        try {
+          await db.$disconnect();
+
+          console.log("Database connection closed");
+
+          await redis.quit();
+
+          console.log("Redis connection closed");
 
           process.exit(0);
         } catch (err) {

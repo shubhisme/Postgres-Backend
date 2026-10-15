@@ -1,4 +1,4 @@
-import { redis } from "./redis.ts";
+import { redis } from "./redis.js";
 
 export type cacheReadResult<T> =
   | {

@@ -1,5 +1,5 @@
-import { acquireLock, releaseLock } from "./redisLock.ts";
-import { connectedRedis, redis } from "./redis.ts";
+import { acquireLock, releaseLock } from "./redisLock.js";
+import { connectedRedis, redis } from "./redis.js";
 
 async function main() {
   await connectedRedis();

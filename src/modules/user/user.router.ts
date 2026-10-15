@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { requireAuth } from "../../middleware/auth.middlewear.ts";
-import { asyncHandler } from "../../middleware/asyncHandler.ts";
+import { requireAuth } from "../../middleware/auth.middlewear.js";
+import { asyncHandler } from "../../middleware/asyncHandler.js";
 import {
   getUserByIdController,
   getUsersController,
   updateUserNameController,
-} from "./user.controller.ts";
+} from "./user.controller.js";
 
 const router = Router();
 

@@ -1,6 +1,6 @@
-import { AppError } from "../../errors/AppError.ts";
-import { db } from "../../lib/db.ts";
-import { TranferMoneyInput } from "./transaction.validator.ts";
+import { AppError } from "../../errors/AppError.js";
+import { db } from "../../lib/db.js";
+import { TranferMoneyInput } from "./transaction.validator.js";
 
 export async function addMoney({ id, amount }: { id: string; amount: number }) {
   return await db.user.update({

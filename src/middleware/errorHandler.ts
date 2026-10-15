@@ -1,5 +1,5 @@
 import type { ErrorRequestHandler } from "express";
-import { AppError } from "../errors/AppError.ts";
+import { AppError } from "../errors/AppError.js";
 import { success, ZodError } from "zod";
 import { Prisma } from "@prisma/client";
 
