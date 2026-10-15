@@ -1,4 +1,4 @@
-import { db } from "../../lib/db.ts";
+import { db } from "../../lib/db.js";
 
 export async function getUsers() {
   const response = await db.user.findMany();

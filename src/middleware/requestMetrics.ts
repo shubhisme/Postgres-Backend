@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { requestContext } from "../lib/requestContext.ts";
+import { requestContext } from "../lib/requestContext.js";
 
 export interface RequestMetrics {
   dbQueryCount: number;

@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { redis } from "./redis.ts";
+import { redis } from "./redis.js";
 
 export async function acquireLock(key: string, ttlSeconds: number) {
   const token = randomUUID();

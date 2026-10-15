@@ -3,9 +3,9 @@ import {
   addMoneySchema,
   tranferMoneySchema,
   transferHitorySchema,
-} from "./transaction.validator.ts";
-import { addMoney } from "./transaction.repository.ts";
-import { transferHistory, transferMoney } from "./transaction.service.ts";
+} from "./transaction.validator.js";
+import { addMoney } from "./transaction.repository.js";
+import { transferHistory, transferMoney } from "./transaction.service.js";
 
 export async function addMoneyController(req: Request, res: Response) {
   const data = addMoneySchema.parse(req.body);

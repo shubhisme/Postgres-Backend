@@ -1,13 +1,13 @@
 import argon2 from "argon2";
-import { createUser, findUserByEmail } from "./auth.repository.ts";
-import { RegistartionInput, LoginInput, loginSchema } from "./auth.schema.ts";
-import { AppError } from "../../errors/AppError.ts";
-import { genetrateSessionToken, hashSessionToken } from "./session.ts";
+import { createUser, findUserByEmail } from "./auth.repository.js";
+import { RegistartionInput, LoginInput, loginSchema } from "./auth.schema.js";
+import { AppError } from "../../errors/AppError.js";
+import { genetrateSessionToken, hashSessionToken } from "./session.js";
 import {
   createSession,
   deleteSession,
   getSession,
-} from "../../lib/sessions.ts";
+} from "../../lib/sessions.js";
 
 export async function registerUser(input: RegistartionInput) {
   const existingUser = await findUserByEmail(input.email);

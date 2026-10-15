@@ -3,9 +3,9 @@ import {
   loginController,
   logoutController,
   registerController,
-} from "./auth.controller.ts";
-import { asyncHandler } from "../../middleware/asyncHandler.ts";
-import { requireAuth } from "../../middleware/auth.middlewear.ts";
+} from "./auth.controller.js";
+import { asyncHandler } from "../../middleware/asyncHandler.js";
+import { requireAuth } from "../../middleware/auth.middlewear.js";
 
 const router = Router();
 

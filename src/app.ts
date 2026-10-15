@@ -1,11 +1,11 @@
 import express from "express";
 import { type Request, type Response } from "express";
-import userRouter from "./modules/user/user.router.ts";
-import useAddMoney from "./modules/transaction/transaction.router.ts";
-import { errorHandler } from "./middleware/errorHandler.ts";
-import authRouter from "./modules/auth/auth.route.ts";
+import userRouter from "./modules/user/user.router.js";
+import useAddMoney from "./modules/transaction/transaction.router.js";
+import { errorHandler } from "./middleware/errorHandler.js";
+import authRouter from "./modules/auth/auth.route.js";
 import cookieParse from "cookie-parser";
-import { ExportMetrics } from "./middleware/requestMetrics.ts";
+import { ExportMetrics } from "./middleware/requestMetrics.js";
 
 const app = express();
 app.use(express.json());

@@ -33,8 +33,8 @@
 
     "isolatedModules": true,
     "verbatimModuleSyntax": false,
-    "emitDeclarationOnly": true,
-    "allowImportingTsExtensions" : true,
+    "emitDeclarationOnly": false,
+    "allowImportingTsExtensions" : false,
 
     "allowUnusedLabels": false,
     "allowUnreachableCode": false,

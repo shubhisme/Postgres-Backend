@@ -1,5 +1,5 @@
-import { AppError } from "../errors/AppError.ts";
-import { redis } from "./redis.ts";
+import { AppError } from "../errors/AppError.js";
+import { redis } from "./redis.js";
 
 const SESSION_PREFIX = "session:";
 

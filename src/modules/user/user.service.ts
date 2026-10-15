@@ -1,11 +1,11 @@
-import { deleteCache, getCache, setCache } from "../../lib/cache.ts";
-import { redis } from "../../lib/redis.ts";
-import { acquireLock, releaseLock } from "../../lib/redisLock.ts";
+import { deleteCache, getCache, setCache } from "../../lib/cache.js";
+import { redis } from "../../lib/redis.js";
+import { acquireLock, releaseLock } from "../../lib/redisLock.js";
 import {
   getUserByID,
   getUsers,
   updateUserNameById,
-} from "./user.repository.ts";
+} from "./user.repository.js";
 
 export async function getUsersService() {
   const users = await getUsers();
